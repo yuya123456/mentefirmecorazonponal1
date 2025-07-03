@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mente Firme, Corazón en Paz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        .breathing-circle { 
+            transition: all 1s ease-in-out; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px; /* Ajusta el tamaño según sea necesario */
+            opacity: 0.5; /* Transparencia del logo */
+        }
+    </style>
+</head>
+<body>
+    <img src="imagenes/logo_translucido.png" alt="Logo" class="logo" /> <!-- Agrega tu logo aquí -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Componente de modo oscuro
+        const DarkModeToggle = ({ darkMode, toggleDarkMode }) => (
+            <button 
+                onClick={toggleDarkMode}
+                className={p-2 rounded-full ${darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-200 text-gray-700'}}
+            >
+                {darkMode ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                    </svg>
+                )}
+            </button>
+        );
+
+        const icons = {
+            Heart: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            ),
+            Brain: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.07 2.07 0 0 1-2.44-2.44 2.07 2.07 0 0 1-2.44-2.44 2.07 2.07 0 0 1-2.44-2.44A2.5 2.5 0 0 1 2 9.5v-5C2 3.12 3.12 2 4.5 2s2.5 1.12 2.5 2.5S6.88 7 5.5 7H9.5z"/>
+                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.07 2.07 0 0 0 2.44-2.44 2.07 2.07 0 0 0 2.44-2.44 2.07 2.07 0 0 0 2.44-2.44A2.5 2.5 0 0 0 22 9.5v-5C22 3.12 20.88 2 19.5 2s-2.5 1.12-2.5 2.5S18.12 7 19.5 7H14.5z"/>
+                </svg>
+            ),
+            Users: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            ),
+            Calendar: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            ),
+            Star: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                </svg>
+            ),
+            MessageCircle: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+            ),
+            Target: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+            ),
+            CheckCircle: () => (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22,4 12,14.01 9,11.01"/>
+                </svg>
+            ),
+            Clock: () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+            ),
+            ChevronDown: () => (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            )
+        };
+
+        const BreathingExercise = ({ completeExercise }) => {
+            const [isActive, setIsActive] = useState(false);
+            const [seconds, setSeconds] = useState(0);
+            const [phase, setPhase] = useState('inhale');
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive) {
+                    interval = setInterval(() => {
+                        setSeconds(seconds => {
+                            if (seconds === 3 && phase === 'inhale') {
+                                setPhase('hold');
+                                return 0;
+                            } else if (seconds === 3 && phase === 'hold') {
+                                setPhase('exhale');
+                                return 0;
+                            } else if (seconds === 3 && phase === 'exhale') {
+                                setPhase('inhale');
+                                return 0;
+                            }
+                            return seconds + 1;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(interval);
+            }, [isActive, phase]);
+
+            const startExercise = () => {
+                setIsActive(true);
+                setSeconds(0);
+                setPhase('inhale');
+            };
+
+            const stopExercise = () => {
+                setIsActive(false);
+                completeExercise();
+            };
+
+            const getPhaseText = () => {
+                switch(phase) {
+                    case 'inhale': return 'Inhala profundamente...';
+                    case 'hold': return 'Mantén el aire...';
+                    case 'exhale': return 'Exhala lentamente...';
+                    default: return 'Preparado';
+                }
+            };
+
+            const getCircleClass = darkMode => {
+                const baseClass = "w-32 h-32 mx-auto rounded-full border-4 breathing-circle flex items-center justify-center mb-6 ";
+                switch(phase) {
+                    case 'inhale': return darkMode 
+                        ? baseClass + "border-blue-400 scale-110" 
+                        : baseClass + "border-blue-600 scale-110";
+                    case 'hold': return darkMode 
+                        ? baseClass + "border-yellow-300 scale-105" 
+                        : baseClass + "border-yellow-500 scale-105";
+                    case 'exhale': return darkMode 
+                        ? baseClass + "border-green-400 scale-95" 
+                        : baseClass + "border-green-600 scale-95";
+                    default: return baseClass + "border-gray-400";
+                }
+            };
+
+            return { isActive, startExercise, stopExercise, getPhaseText, getCircleClass };
+        };
+
+        const MenteFirmeApp = () => {
+            const [darkMode, setDarkMode] = useState(false);
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [showSuggestedTopics, setShowSuggestedTopics] = useState(false);
+            const [activities, setActivities] = useState({
+                breathing: { completed: false, lastDate: null },
+                gratitude: { messages: [], completed: false },
+                conversation: { topics: [], nextSession: null },
+                motivation: { todaysCard: null, viewed: false }
+            });
+            const [weekProgress, setWeekProgress] = useState(0);
+
+            const motivationalCards = [
+                "Tu bienestar mental fortalece tu servicio",
+                "Cada respiro profundo es un paso hacia la calma",
+                "Cuidarte a ti mismo es cuidar a tu comunidad",
+                "La fortaleza mental se construye día a día",
+                "Tu paz interior se refleja en tu labor",
+                "El autocuidado es parte de tu misión",
+                "Una mente sana protege mejor",
+                "Juntos somos más fuertes"
+            ];
+
+            const suggestedConversationTopics = [
+                "¿Cuál es tu libro favorito y por qué?",
+                "¿Qué te motiva a seguir adelante cada día?",
+                "¿Cómo manejas el estrés en tu vida diaria?",
+                "¿Qué significa para ti la gratitud?",
+                "Cuéntanos un momento que te haya hecho sentir orgulloso",
+                "¿Qué actividad te ayuda a relajarte?",
+                "Comparte una historia inspiradora que hayas vivido"
+            ];
+
+            // Cargar datos guardados del localStorage
+            useEffect(() => {
+                const loadedActivities = JSON.parse(localStorage.getItem('activities'));
+                const loadedProgress = localStorage.getItem('weekProgress');
+                
+                if (loadedActivities) setActivities(loadedActivities);
+                if (loadedProgress) setWeekProgress(parseInt(loadedProgress));
+
+                // Tarjeta motivacional diaria
+                const today = new Date().toDateString();
+                const randomCard = motivationalCards[Math.floor(Math.random() * motivationalCards.length)];
+                setActivities(prev => ({
+                    ...prev,
+                    motivation: { todaysCard: randomCard, viewed: false }
+                }));
+            }, []);
+
+            // Guardar el estado en localStorage cuando cambia
+            useEffect(() => {
+                localStorage.setItem('activities', JSON.stringify(activities));
+                localStorage.setItem('weekProgress', weekProgress.toString());
+            }, [activities, weekProgress]);
+
+            const toggleDarkMode = () => {
+                setDarkMode(!darkMode);
+            };
+
+            const completeBreathing = () => {
+                setActivities(prev => ({
+                    ...prev,
+                    breathing: { completed: true, lastDate: new Date().toLocaleString() }
+                }));
+                calculateProgress();
+                showNotification('¡Ejercicio de respiración completado!');
+            };
+
+            const addGratitudeMessage = (message) => {
+                if (message.trim()) {
+                    setActivities(prev => ({
+                        ...prev,
+                        gratitude: {
+                            messages: [...prev.gratitude.messages, { text: message, date: new Date().toLocaleDateString() }],
+                            completed: true
+                        }
+                    }));
+                    calculateProgress();
+                    showNotification('Mensaje de gratitud enviado');
+                }
+            };
+
+            const addConversationTopic = (topic) => {
+                if (topic.trim()) {
+                    setActivities(prev => ({
+                        ...prev,
+                        conversation: {
+                            ...prev.conversation,
+                            topics: [...prev.conversation.topics,
